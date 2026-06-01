@@ -1,4 +1,5 @@
-import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsString, Matches, MinLength } from 'class-validator';
+import { Role } from 'src/common/enums/role.enum';
 
 export class SignUPDto {
   @IsString()
@@ -13,4 +14,7 @@ export class SignUPDto {
     message: 'Password must contain at least one number',
   })
   password: string;
+
+  @IsEnum(Role)
+  role: Role;
 }

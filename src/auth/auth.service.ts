@@ -8,11 +8,9 @@ import { UsersService } from 'src/users/users.service';
 import { SignUPDto } from './dtos/signup.dto';
 import * as bcrypt from 'bcrypt';
 import { UserDto } from 'src/users/dtos/user.dto';
-import { Role } from 'src/common/enums/role.enum';
 import { User } from 'src/users/Schemas/user.schema';
 import { LogInDto } from './dtos/login.dto';
 import { JwtPayload } from 'src/common/enums/interfaces/jwt-payload.interface';
-import { use } from 'passport';
 import { ConfigService } from '@nestjs/config';
 import { StringValue } from 'ms';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
@@ -35,10 +33,10 @@ export class AuthService {
       username: signupData.username,
       email: signupData.email,
       password: hashpassword,
-      role: Role.USER,
+      role: signupData.role,
     };
     const user = await this.userService.createUsers(create);
-    const token = this.generateAccessToken(user);
+    const token = await this.generateAccessToken(user);
     return {
       message: 'The user has been created',
       token,
@@ -60,7 +58,7 @@ export class AuthService {
     if (!matchpass) {
       throw new UnauthorizedException('Wrong password');
     }
-    const token = this.generateAccessToken(user);
+    const token = await this.generateAccessToken(user);
     return {
       message: 'The user has been logged in',
       token,
@@ -75,7 +73,7 @@ export class AuthService {
 
   private async generateAccessToken(user: User) {
     const payload: JwtPayload = {
-      id: user._id.toString(),
+      sub: user._id.toString(),
       email: user.email,
       role: user.role,
     };
@@ -103,10 +101,10 @@ export class AuthService {
   async refreshToken(refreshtokendata: RefreshTokenDto) {
     const { refreshtoken } = refreshtokendata;
     try {
-      const payload = this.jwtService.verify(refreshtoken, {
-        secret:this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      },);
-      const user = await this.userService.findById(payload.id);
+      const payload: JwtPayload = this.jwtService.verify(refreshtoken, {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      });
+      const user = await this.userService.findById(payload.sub);
       if (!user) {
         throw new UnauthorizedException('The user is not found');
       }
@@ -121,8 +119,10 @@ export class AuthService {
         throw new UnauthorizedException('Invalid Refresh Token');
       }
       return this.generateAccessToken(user);
-    } catch {
-      throw new UnauthorizedException('Invalid Refresh Token');
+    } catch (error) {
+      //throw new UnauthorizedException('Invalid Refresh Token');
+      console.log(error);
+      throw error;
     }
   }
 }

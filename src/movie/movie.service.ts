@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Movie } from './Schemas/movie.schema';
 import { Model } from 'mongoose';
-import mongoose from 'mongoose';
 import { CreateMovieDto } from './Dtos/create-movie.dto';
 import { UpdateMovieDto } from './Dtos/update-movie.dto';
 import { PaginationDto } from 'src/common/enums/Dtos/pagination.dto';
@@ -59,11 +58,11 @@ export class MovieService {
   }
 
   async searchMovie(searchmovieData: SearchMovieDto) {
-    const query: mongoose.FilterQuery<Movie> = {};
+    const query: Record<string, unknown> = {};
     if (searchmovieData.title) {
       query.title = {
         $regex: searchmovieData.title,
-        $options: '1',
+        $options: 'i',
       };
     }
     if (searchmovieData.genre) {

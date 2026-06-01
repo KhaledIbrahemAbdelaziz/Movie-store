@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { JwtPayload } from 'src/common/enums/interfaces/jwt-payload.interface';
 
 @Injectable()
-export class JwtStrategies extends PassportStrategy(Strategy) {
+export class JwtStrategies extends PassportStrategy(Strategy, 'jwt') {
   constructor(private configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -15,10 +15,6 @@ export class JwtStrategies extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    return {
-      userid: payload.id,
-      email: payload.email,
-      role: payload.role,
-    };
+    return payload;
   }
 }
