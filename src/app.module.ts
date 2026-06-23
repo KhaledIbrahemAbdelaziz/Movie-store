@@ -6,6 +6,11 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MovieModule } from './movie/movie.module';
+import { MailModule } from './mail/mail.module';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseInterceptor } from './common/Interceptors/response.interceptor';
+import { IdempotencyModule } from './idempotency/idempotency.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -16,11 +21,24 @@ import { MovieModule } from './movie/movie.module';
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     AuthModule,
     UsersModule,
     MovieModule,
+    MailModule,
+    IdempotencyModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

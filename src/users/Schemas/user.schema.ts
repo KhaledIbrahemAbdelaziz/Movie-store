@@ -18,6 +18,15 @@ export class User extends Document {
 
   @Prop({ default: null })
   hashedRefreshToken?: string;
+
+  @Prop()
+  passwordResetOTP?: string;
+
+  @Prop()
+  passwordResetOTPExpires?: Date;
+
+  @Prop({ default: 0 })
+  tokenVersion: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

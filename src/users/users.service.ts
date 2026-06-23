@@ -12,7 +12,7 @@ export class UsersService {
     return this.userModel.create(UserData);
   }
 
-  async findUsers(email: string): Promise<User | null> {
+  async findUserbyemail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email });
   }
 

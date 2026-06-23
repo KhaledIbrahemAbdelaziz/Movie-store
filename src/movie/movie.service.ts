@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Movie } from './Schemas/movie.schema';
 import { Model } from 'mongoose';
 import { CreateMovieDto } from './Dtos/create-movie.dto';
 import { UpdateMovieDto } from './Dtos/update-movie.dto';
-import { PaginationDto } from 'src/common/enums/Dtos/pagination.dto';
+import { PaginationDto } from 'src/common/Dtos/pagination.dto';
 import { SearchMovieDto } from './Dtos/search-movie.dto';
 
 @Injectable()
@@ -12,7 +16,7 @@ export class MovieService {
   constructor(@InjectModel(Movie.name) private movieModel: Model<Movie>) {}
 
   async createmovies(createmoviedata: CreateMovieDto): Promise<Movie> {
-    return this.movieModel.create(createmoviedata);
+    return await this.movieModel.create(createmoviedata);
   }
 
   async findallmovies(paginationData: PaginationDto) {
@@ -26,10 +30,14 @@ export class MovieService {
       .sort({ createdAt: -1 });
     const total = await this.movieModel.countDocuments();
     return {
-      total,
-      page,
-      limit,
-      results: movies,
+      success: true,
+      message: 'Movies Retrieved Successfully',
+      data: {
+        total,
+        page,
+        limit,
+        results: movies,
+      },
     };
   }
 
@@ -66,7 +74,10 @@ export class MovieService {
       };
     }
     if (searchmovieData.genre) {
-      query.genre = searchmovieData.genre;
+      query.genre = {
+        $regex: searchmovieData.genre,
+        $options: 'i',
+      };
     }
     return this.movieModel.find(query);
   }

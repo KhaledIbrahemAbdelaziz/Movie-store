@@ -1,4 +1,4 @@
-import { Role } from '../role.enum';
+import { Role } from '../enums/role.enum';
 
 export interface JwtPayload {
   sub: string;
@@ -6,4 +6,6 @@ export interface JwtPayload {
   email: string;
 
   role: Role;
+
+  tokenVersion: number;
 }
